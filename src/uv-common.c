@@ -175,6 +175,23 @@ const char* uv_strerror(int err) {
 }
 #undef UV_STRERROR_GEN
 
+#define UV_STRERROR_GEN_R(name, msg) case UV_ ## name: { strncpy(buf, #name, buflen); break; }
+const char* uv_strerror_r(int err, char *buf, size_t buflen) {
+  switch (err) {
+    UV_ERRNO_MAP(UV_STRERROR_GEN_R)
+    default: {
+      snprintf(buf, buflen, "Unknown system error %d", err);
+      break;
+    }
+  }
+  /* ensure zero-termination */
+  if ((buf != NULL) && (buflen != 0))
+    buf[buflen-1] = '\0';
+
+  return buf;
+}
+#undef UV_STRERROR_GEN_R
+
 
 int uv_ip4_addr(const char* ip, int port, struct sockaddr_in* addr) {
   memset(addr, 0, sizeof(*addr));
